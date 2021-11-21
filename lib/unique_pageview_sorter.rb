@@ -2,19 +2,9 @@
 
 # This class is used to sort pageviews by unique visitors
 class UniquePageviewSorter
-  def initialize(views)
-    @views = views
-  end
-
-  def call
-    pageviews.sort { |a, b| b.count <=> a.count }
-  end
-
-  private
-
-  attr_accessor :views
-
-  def pageviews
-    views.map { |page, visitors| Countable.new page, visitors.count }
+  def self.call
+    Countable.group_and_count(:page)
+             .reverse_order(:count)
+             .to_a
   end
 end

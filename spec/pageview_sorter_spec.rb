@@ -5,9 +5,13 @@ require './lib/pageview_sorter'
 require './lib/countable'
 
 RSpec.describe PageviewSorter do
+  before do
+    Countable.where(Sequel[:count] > 0).delete
+  end
+
   context 'with empty json' do
     it 'sorts into empty array' do
-      actuall = described_class.new({}).call
+      actuall = described_class.call
 
       expect(actuall).to eq([]).and be_an(Array)
     end
@@ -15,41 +19,31 @@ RSpec.describe PageviewSorter do
 
   context 'with json with one pageview' do
     it 'sorts into array with one pageview' do
-      json = {
-        '/' => {
-          '1.1.1.1' => 2
-        }
-      }
-      actuall = described_class.new(json).call
+      Countable.create(page: '/', visitor: '1.1.1.1', count: 2)
+
+      actuall = described_class.call
       expectation = [
-        Countable.new('/', 2)
+        Countable.new(page: '/', count: 2)
       ]
 
-      expect(actuall).to be_an(Array)
-      expect(actuall[0].as_json).to eq(expectation[0].as_json)
+      expect(actuall).to eq(expectation).and be_an(Array)
     end
   end
 
   context 'with json with multiple pageviews' do
     it 'sorts into array with one pageview' do
-      json = {
-        '/a' => {
-          '1.1.1.1' => 1,
-          '1.1.1.2' => 2
-        },
-        '/b' => {
-          '1.1.1.1' => 2,
-          '1.1.1.2' => 3
-        }
-      }
-      actuall = described_class.new(json).call
+      Countable.create(page: '/a', visitor: '1.1.1.1', count: 1)
+      Countable.create(page: '/a', visitor: '1.1.1.2', count: 2)
+      Countable.create(page: '/b', visitor: '1.1.1.1', count: 2)
+      Countable.create(page: '/b', visitor: '1.1.1.2', count: 3)
+
+      actuall = described_class.call
       expectation = [
-        Countable.new('/b', 5),
-        Countable.new('/a', 3)
+        Countable.new(page: '/b', count: 5),
+        Countable.new(page: '/a', count: 3)
       ]
 
-      expect(actuall).to be_an(Array)
-      expect(actuall[0].as_json).to eq(expectation[0].as_json)
+      expect(actuall).to eq(expectation).and be_an(Array)
     end
   end
 end

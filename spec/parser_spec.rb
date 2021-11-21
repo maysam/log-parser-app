@@ -2,13 +2,18 @@
 
 require 'spec_helper'
 require './lib/parser'
+require './lib/countable'
 
 RSpec.describe Parser do
+  before do
+    Countable.where(Sequel[:count] > 0).delete
+  end
+
   context 'with empty string' do
     it 'parses into an empty hash' do
-      actuall = described_class.new('').call
+      described_class.new('').call
 
-      expect(actuall).to eq({})
+      expect(Countable.count).to eq 0
     end
   end
 
@@ -20,9 +25,9 @@ RSpec.describe Parser do
 
       HEREDOC
 
-      actuall = described_class.new(input_text).call
+      described_class.new(input_text).call
 
-      expect(actuall).to eq({ 'page1' => { 'visitor1' => 1 } })
+      expect(Countable.where(page: 'page1', visitor: 'visitor1', count: 1).count).to eq 1
     end
   end
 
@@ -40,12 +45,13 @@ RSpec.describe Parser do
 
       HEREDOC
 
-      actuall = described_class.new(input_text).call
+      described_class.new(input_text).call
 
-      expect(actuall).to eq({
-                              'page1' => { 'visitor1' => 3, 'visitor2' => 1 },
-                              'page2' => { 'visitor1' => 1, 'visitor2' => 2 }
-                            })
+      expect(Countable.where(page: 'page1', visitor: 'visitor1', count: 3).count).to eq 1
+      expect(Countable.where(page: 'page1', visitor: 'visitor2', count: 1).count).to eq 1
+      expect(Countable.where(page: 'page2', visitor: 'visitor1', count: 1).count).to eq 1
+      expect(Countable.where(page: 'page2', visitor: 'visitor2', count: 2).count).to eq 1
+      expect(Countable.count).to eq 4
     end
   end
 end

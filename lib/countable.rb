@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 
+require 'sequel'
+
 # associates the number of counts with each page
-class Countable
-  def initialize(page, count)
-    @page = page
-    @count = count
-  end
+class Countable < Sequel::Model
+  plugin :timestamps, update_on_create: true
+  plugin :validation_helpers
+  plugin :json_serializer
 
-  def as_json
-    {
-      page: page,
-      count: count
-    }
+  def validate
+    super
+    validates_presence [:page]
   end
-
-  attr_accessor :page, :count
 end
+Countable.unrestrict_primary_key

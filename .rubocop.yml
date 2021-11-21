@@ -23,7 +23,7 @@ RSpec/ContextWording:
     - while
 
 RSpec/MultipleExpectations:
-  Max: 2
+  Max: 5
 
 RSpec/ExampleLength:
   Max: 20

@@ -7,16 +7,17 @@ class Parser
   end
 
   def call
-    views = {}
     lines.each do |line|
       page, visitor = line.split(' ')
       next unless page && visitor
 
-      views[page] ||= {}
-      views[page][visitor] ||= 0
-      views[page][visitor] += 1
+      view = Countable.where(page: page, visitor: visitor).first
+      if view.nil?
+        Countable.create(page: page, visitor: visitor, count: 1)
+      else
+        view.update count: view.count + 1
+      end
     end
-    views
   end
 
   private
