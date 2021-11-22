@@ -14,15 +14,13 @@ end
 
 filename = ARGV[0]
 
-if File.exist?(filename)
-  puts "Reading file #{filename}"
-  input_text = File.read(filename)
-else
+unless File.exist?(filename)
   puts "File #{filename} does not exist"
   exit
 end
 
-Parser.new(input_text).call
+puts "Parsing file #{filename}"
+Parser.new(filename).call
 
 sorted_pageviews = PageviewSorter.call
 print "Pageview count per page sorted by descending order:\n\n"

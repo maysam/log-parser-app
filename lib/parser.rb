@@ -2,25 +2,25 @@
 
 # parses input text into hashtable of urls and their list visitors associated with their visit counts
 class Parser
-  def initialize(text)
-    @lines = text.split("\n")
+  def initialize(filename)
+    @filename = filename
   end
 
   def call
-    lines.each do |line|
+    File.open(filename, 'r').each_line do |line|
       page, visitor = line.split(' ')
       next unless page && visitor
 
-      view = Countable.where(page: page, visitor: visitor).first
-      if view.nil?
+      row = Countable.where(page: page, visitor: visitor).first
+      if row.nil?
         Countable.create(page: page, visitor: visitor, count: 1)
       else
-        view.update count: view.count + 1
+        row.update count: row.count + 1
       end
     end
   end
 
   private
 
-  attr_accessor :lines
+  attr_accessor :filename
 end
